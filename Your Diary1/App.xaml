@@ -1,0 +1,13 @@
+﻿<Application
+    x:Class="Your_Diary1.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Your_Diary1">
+
+    <Application.Resources>
+        <!-- Add your Client Id here. -->
+        <x:String x:Key="ida:ClientID">d9f9e643-c8d6-4eb7-b38e-1878674fc7be</x:String>
+        <!-- Add your Redirect URI here. -->
+        <x:String x:Key="ida:ReturnUrl">msald9f9e643-c8d6-4eb7-b38e-1878674fc7be://auth</x:String>
+    </Application.Resources>
+</Application>
