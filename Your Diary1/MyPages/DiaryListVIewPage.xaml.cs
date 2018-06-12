@@ -11,6 +11,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -157,59 +158,62 @@ namespace Your_Diary1.MyPages
                 {
                     throw new Exception("Unable to sign in");
                 }
-            }
-            catch
-            {
 
-            }
-            
-            var folder = await OneDriveService.Instance.RootFolderForMeAsync();
-            var folderList = await folder.GetFoldersAsync();
-            foreach (var item in folderList)
-            {
-                if (item.Name == "ApplicationData")
+                var folder = await OneDriveService.Instance.RootFolderForMeAsync();
+                var folderList = await folder.GetFoldersAsync();
+                foreach (var item in folderList)
                 {
-                    int i = 0;
-                    foreach (var item1 in await item.GetFoldersAsync())
+                    if (item.Name == "ApplicationData")
                     {
-                        if (item1.Name == "YourDiary")
-                        {
-                            i++;
-                            var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                            if (selectedFile != null)
-                            {
-                                using (var localStream = await selectedFile.OpenReadAsync())
-                                {
-                                    var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
-                                }
-                            }
-                        }
-                    }
-
-                    if (i == 0)
-                    {
-                        // Then from there you can play with folders and files
-                        // Create Folder
-                        string newFolderName = "YourDiary";
-                        if (!string.IsNullOrEmpty(newFolderName))
-                        {
-                            await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
-                        }
+                        int i = 0;
                         foreach (var item1 in await item.GetFoldersAsync())
                         {
-                            var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                            if (selectedFile != null)
+                            if (item1.Name == "YourDiary")
                             {
-                                using (var localStream = await selectedFile.OpenReadAsync())
+                                i++;
+                                var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                if (selectedFile != null)
                                 {
-                                    var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                    using (var localStream = await selectedFile.OpenReadAsync())
+                                    {
+                                        var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                    }
                                 }
                             }
                         }
+
+                        if (i == 0)
+                        {
+                            // Then from there you can play with folders and files
+                            // Create Folder
+                            string newFolderName = "YourDiary";
+                            if (!string.IsNullOrEmpty(newFolderName))
+                            {
+                                await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
+                            }
+                            foreach (var item1 in await item.GetFoldersAsync())
+                            {
+                                var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                if (selectedFile != null)
+                                {
+                                    using (var localStream = await selectedFile.OpenReadAsync())
+                                    {
+                                        var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                    }
+                                }
+                            }
+                        }
+
                     }
-                    
                 }
             }
+            catch(Exception w)
+            {
+                MessageDialog messageDialog = new MessageDialog(w.Message);
+                await messageDialog.ShowAsync();
+            }
+            
+            
             //// Once you have a reference to the Root Folder you can get a list of all items
             //// List the Items from the current folder
             //var OneDriveItems = await folder.GetItemsAsync();

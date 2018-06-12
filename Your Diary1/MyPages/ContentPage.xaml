@@ -20,7 +20,6 @@
         <Frame Name="RightFrame" 
                Grid.Column="1" 
                Canvas.ZIndex="0" 
-               Grid.ColumnSpan="2" 
                x:FieldModifier="Public"></Frame>
 
         <VisualStateManager.VisualStateGroups>
