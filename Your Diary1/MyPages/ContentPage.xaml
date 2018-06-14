@@ -10,7 +10,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="320" Width="2*" MaxWidth="640"></ColumnDefinition>
+            <ColumnDefinition MinWidth="360" Width="2*" MaxWidth="640"></ColumnDefinition>
             <ColumnDefinition Width="3*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Frame Name="LeftFrame" 

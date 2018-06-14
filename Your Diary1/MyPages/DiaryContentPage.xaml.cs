@@ -169,6 +169,9 @@ namespace Your_Diary1.MyPages
                                         {
                                             var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
                                         }
+                                        MessageDialog messageDialog = new MessageDialog("保存完成");
+                                        await messageDialog.ShowAsync();
+                                        break;
                                     }
                                 }
                             }
@@ -178,21 +181,15 @@ namespace Your_Diary1.MyPages
                                 // Then from there you can play with folders and files
                                 // Create Folder
                                 string newFolderName = "YourDiary";
-                                if (!string.IsNullOrEmpty(newFolderName))
+                                var item1 = await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
+                                var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                using (var localStream = await selectedFile.OpenReadAsync())
                                 {
-                                    await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
+                                    var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
                                 }
-                                foreach (var item1 in await item.GetFoldersAsync())
-                                {
-                                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                                    if (selectedFile != null)
-                                    {
-                                        using (var localStream = await selectedFile.OpenReadAsync())
-                                        {
-                                            var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
-                                        }
-                                    }
-                                }
+                                MessageDialog messageDialog = new MessageDialog("onedrive新建文件");
+                                await messageDialog.ShowAsync();
+                                break;
                             }
 
                         }
