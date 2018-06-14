@@ -10,8 +10,8 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition MinWidth="320" Width="2*" MaxWidth="640"></ColumnDefinition>
+            <ColumnDefinition Width="3*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Frame Name="LeftFrame" 
                Grid.Column="0" 
@@ -35,7 +35,7 @@
                 </VisualState>
                 <VisualState x:Name="Tablet">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="800"></AdaptiveTrigger>
+                        <AdaptiveTrigger MinWindowWidth="640"></AdaptiveTrigger>
                     </VisualState.StateTriggers>
                 </VisualState>
                 <VisualState x:Name="Desktop">

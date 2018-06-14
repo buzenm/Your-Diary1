@@ -46,6 +46,7 @@
                 <DataTemplate x:DataType="local1:Diary">
                     <StackPanel Orientation="Vertical" 
                                 Margin="0,10,0,10" 
+                                
                                 >
                         <TextBlock Name="DateTextBlock" 
                                    Text="{x:Bind DiaryDateTime}" 
@@ -85,4 +86,5 @@
             </CommandBar.SecondaryCommands>
         </CommandBar>
     </Grid>
+    
 </Page>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Services.OneDrive;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -93,9 +95,62 @@ namespace Your_Diary1
         /// <param name="e">有关挂起请求的详细信息。</param>
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
+            //if ((bool)(ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"]))
+            //{
+            //    var folder = await OneDriveService.Instance.RootFolderForMeAsync();
+            //    var folderList = await folder.GetFoldersAsync();
+            //    foreach (var item in folderList)
+            //    {
+            //        if (item.Name == "ApplicationData")
+            //        {
+            //            int i1 = 0;
+            //            foreach (var item1 in await item.GetFoldersAsync())
+            //            {
+            //                if (item1.Name == "YourDiary")
+            //                {
+            //                    i1++;
+            //                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+            //                    if (selectedFile != null)
+            //                    {
+            //                        using (var localStream = await selectedFile.OpenReadAsync())
+            //                        {
+            //                            var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+            //                        }
+            //                    }
+            //                }
+            //            }
+
+            //            if (i1 == 0)
+            //            {
+            //                // Then from there you can play with folders and files
+            //                // Create Folder
+            //                string newFolderName = "YourDiary";
+            //                if (!string.IsNullOrEmpty(newFolderName))
+            //                {
+            //                    await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
+            //                }
+            //                foreach (var item1 in await item.GetFoldersAsync())
+            //                {
+            //                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+            //                    if (selectedFile != null)
+            //                    {
+            //                        using (var localStream = await selectedFile.OpenReadAsync())
+            //                        {
+            //                            var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+            //                        }
+            //                    }
+            //                }
+            //            }
+
+            //        }
+            //    }
+            //}
+
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: 保存应用程序状态并停止任何后台活动
             deferral.Complete();
+
+
         }
     }
 }

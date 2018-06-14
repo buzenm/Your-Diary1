@@ -125,7 +125,7 @@ namespace Your_Diary1.MyPages
             }
             DiaryListVIewPage.current.TitleTextBlock.Text = DiaryListVIewPage.current.diaries.Count + "篇日记";
             //ContentPage.current.LeftFrame.Navigate(typeof(DiaryListVIewPage));
-            Functions.SaveToXmlFile();
+            await Functions.SaveToXmlFile();
 
             // If the user hasn't selected a scope then set it to FilesReadAll
             //if (scopes == null)
@@ -136,62 +136,69 @@ namespace Your_Diary1.MyPages
             // Login
             try
             {
-                if (!await OneDriveService.Instance.LoginAsync())
-                {
-                    throw new Exception("Unable to sign in");
-                }
+                //if (!await OneDriveService.Instance.LoginAsync())
+                //{
+                //    throw new Exception("Unable to sign in");
+                //}
                 //else
                 //{
                 //    throw new Exception("has been login");
                 //}
+                //if (MainPage.signState == 1)
+                //{
 
-                var folder = await OneDriveService.Instance.RootFolderForMeAsync();
-                var folderList = await folder.GetFoldersAsync();
-                foreach (var item in folderList)
+                //}
+                if ((bool)(ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"]))
                 {
-                    if (item.Name == "ApplicationData")
+                    var folder = await OneDriveService.Instance.RootFolderForMeAsync();
+                    var folderList = await folder.GetFoldersAsync();
+                    foreach (var item in folderList)
                     {
-                        int i1 = 0;
-                        foreach (var item1 in await item.GetFoldersAsync())
+                        if (item.Name == "ApplicationData")
                         {
-                            if (item1.Name == "YourDiary")
-                            {
-                                i1++;
-                                var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                                if (selectedFile != null)
-                                {
-                                    using (var localStream = await selectedFile.OpenReadAsync())
-                                    {
-                                        var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (i1 == 0)
-                        {
-                            // Then from there you can play with folders and files
-                            // Create Folder
-                            string newFolderName = "YourDiary";
-                            if (!string.IsNullOrEmpty(newFolderName))
-                            {
-                                await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
-                            }
+                            int i1 = 0;
                             foreach (var item1 in await item.GetFoldersAsync())
                             {
-                                var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                                if (selectedFile != null)
+                                if (item1.Name == "YourDiary")
                                 {
-                                    using (var localStream = await selectedFile.OpenReadAsync())
+                                    i1++;
+                                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                    if (selectedFile != null)
                                     {
-                                        var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                        using (var localStream = await selectedFile.OpenReadAsync())
+                                        {
+                                            var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                        }
                                     }
                                 }
                             }
-                        }
 
+                            if (i1 == 0)
+                            {
+                                // Then from there you can play with folders and files
+                                // Create Folder
+                                string newFolderName = "YourDiary";
+                                if (!string.IsNullOrEmpty(newFolderName))
+                                {
+                                    await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
+                                }
+                                foreach (var item1 in await item.GetFoldersAsync())
+                                {
+                                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                    if (selectedFile != null)
+                                    {
+                                        using (var localStream = await selectedFile.OpenReadAsync())
+                                        {
+                                            var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
                     }
                 }
+                
             }
             catch (Exception w)
             {

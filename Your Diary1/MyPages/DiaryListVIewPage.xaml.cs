@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Data.Xml.Dom;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -30,6 +32,7 @@ namespace Your_Diary1.MyPages
     /// </summary>
     public sealed partial class DiaryListVIewPage : Page
     {
+        
         public Diary deleteDiary = new Diary();
         public static DiaryListVIewPage current;
         public Diary diary = new Diary();
@@ -46,42 +49,91 @@ namespace Your_Diary1.MyPages
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            // Using the new converged authentication of the Microsoft Graph we can simply
-            // call the Initialize method on the OneDriveService singleton when initializing
-            // in UWP applications
-            string appClientId = "d9f9e643-c8d6-4eb7-b38e-1878674fc7be";
-            string[] scopes = new string[] { MicrosoftGraphScope.FilesReadWriteAll }; ;
-            OneDriveService.Instance.Initialize
-                (appClientId,
-                 scopes,
-                 null,
-                 null);
-
+            //await Functions.SaveToOneDrive();
             string xmlContent = string.Empty;
-            StorageFolder folder = ApplicationData.Current.LocalFolder;
-            if ((await folder.GetFilesAsync()).Count == 1)
+            if ((bool)(ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"]))
             {
-                StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                using (IRandomAccessStream readStream = await file.OpenAsync(FileAccessMode.Read))
+                var folder1 = await OneDriveService.Instance.RootFolderForMeAsync();
+                var folderList = await folder1.GetFoldersAsync();
+                foreach (var item in folderList)
                 {
-                    using (DataReader dataReader = new DataReader(readStream))
+                    if (item.Name == "ApplicationData")
                     {
-                        UInt64 size = readStream.Size;
-                        if (size <= UInt32.MaxValue)
+                        foreach (var item1 in await item.GetFoldersAsync())
                         {
-                            UInt32 numBytesLoaded = await dataReader.LoadAsync((UInt32)size);
-                            string fileContent = dataReader.ReadString(numBytesLoaded);
-                            xmlContent = fileContent;
+                            if (item1.Name == "YourDiary")
+                            {
+                                foreach (var item2 in await item1.GetFilesAsync())
+                                {
+                                    if (item2.Name == "diary.xml")
+                                    {
+                                        StorageFolder folder2 = ApplicationData.Current.LocalFolder;
+                                        foreach (var item3 in await folder2.GetFilesAsync())
+                                        {
+                                            if (item3.Name == "diary.xml")
+                                            {
+                                                if (item2.DateCreated <= item3.DateCreated)
+                                                {
+                                                    StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                                    await FileToObservable(file);
+                                                }
+                                                else
+                                                {
+                                                    var fileStream = await item2.StorageFilePlatformService.OpenAsync();
+                                                    //using (IRandomAccessStream readStream = (IRandomAccessStream)fileStream)
+                                                    //{
+                                                    //    using (DataReader dataReader = new DataReader(readStream))
+                                                    //    {
+                                                    //        UInt64 size = readStream.Size;
+                                                    //        if (size <= UInt32.MaxValue)
+                                                    //        {
+                                                    //            UInt32 numBytesLoaded = await dataReader.LoadAsync((UInt32)size);
+                                                    //            string fileContent = dataReader.ReadString(numBytesLoaded);
+                                                    //            xmlContent = fileContent;
+                                                    //        }
+                                                    //    }
+                                                    //}
+
+                                                    //ObservableCollection<Diary> roamingDiaries = (ObservableCollection<Diary>)Functions.Deserialize(typeof(ObservableCollection<Diary>), xmlContent);
+                                                    ObservableCollection<Diary> roamingDiaries = await FileStreamToObservable((IRandomAccessStream)fileStream);
+                                                    foreach (var item4 in roamingDiaries)
+                                                    {
+                                                        diaries.Add(item4);
+                                                    }
+                                                    TitleTextBlock.Text = diaries.Count + "篇日记";
+                                                    
+                                                }
+                                                //await Functions.SaveToOneDrive();
+                                            }
+                                            break;
+                                        }
+                                        
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-                ObservableCollection<Diary> roamingDiaries = (ObservableCollection<Diary>)Functions.Deserialize(typeof(ObservableCollection<Diary>), xmlContent);
-                foreach (var item in roamingDiaries)
-                {
-                    diaries.Add(item);
-                }
-                TitleTextBlock.Text = diaries.Count + "篇日记";
+
             }
+            else
+            {
+                StorageFolder folder = ApplicationData.Current.LocalFolder;
+                foreach (var item in await folder.GetFilesAsync())
+                {
+                    if (item.Name == "diary.xml")
+                    {
+                        StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                        await FileToObservable(file);
+                    }
+                }
+            }
+            
+            
+            //if ((await folder.GetFilesAsync()).Count == 1)
+            //{
+                
+            //}
         }
 
         private void YourDiaryListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -111,6 +163,7 @@ namespace Your_Diary1.MyPages
                 {
                     i++;
                     diary = item;
+
                 }
             }
             if (i == 0)
@@ -142,8 +195,8 @@ namespace Your_Diary1.MyPages
 
         private async void SyncAppBarButton_Click(object sender, RoutedEventArgs e)
         {
-            Functions.SaveToXmlFile();
-
+            
+            
 
             // If the user hasn't selected a scope then set it to FilesReadAll
             //if (scopes == null)
@@ -154,11 +207,23 @@ namespace Your_Diary1.MyPages
             // Login
             try
             {
-                if (!await OneDriveService.Instance.LoginAsync())
+                //if (!await OneDriveService.Instance.LoginAsync())
+                //{
+                //    throw new Exception("Unable to sign in");
+                //}
+                if (!(bool)ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"])
                 {
-                    throw new Exception("Unable to sign in");
+                    await OneDriveService.Instance.LoginAsync();
+                    //MainPage.signState = 1;
+                    //var localSetting = ApplicationData.Current.LocalSettings ;
+                    ApplicationData.Current.LocalSettings.CreateContainer("signStateContainer", ApplicationDataCreateDisposition.Always);
+                    if (ApplicationData.Current.LocalSettings.Containers.ContainsKey("signStateContainer"))
+                    {
+                        ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"] = true;
+                    }
                 }
-
+                
+                
                 var folder = await OneDriveService.Instance.RootFolderForMeAsync();
                 var folderList = await folder.GetFoldersAsync();
                 foreach (var item in folderList)
@@ -171,14 +236,59 @@ namespace Your_Diary1.MyPages
                             if (item1.Name == "YourDiary")
                             {
                                 i++;
-                                var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                                if (selectedFile != null)
+                                foreach (var item2 in await item1.GetFilesAsync())
                                 {
-                                    using (var localStream = await selectedFile.OpenReadAsync())
+                                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                    if (item2.Name == "diary.xml")
                                     {
-                                        var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile.Name, CreationCollisionOption.ReplaceExisting, localStream);
+                                        if (item2.DateModified.Value.Date != DateTime.Now.Date)
+                                        {
+                                            var oneDriveFileStream = await item2.StorageFilePlatformService.OpenAsync();
+                                            //diaries = (await FileStreamToObservable(await selectedFile.OpenAsync(FileAccessMode.Read))).Concat((await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream)));
+                                            ObservableCollection<Diary> middleDiaries = await FileStreamToObservable(await selectedFile.OpenAsync(FileAccessMode.Read));
+                                            foreach (var item4 in (await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream)))
+                                            {
+                                                //if (!(middleDiaries.Contains(item4)))
+                                                //{
+                                                //    middleDiaries.Add(item4);
+                                                //}
+                                                //foreach (var item5 in middleDiaries)
+                                                //{
+                                                //    if (!(item4.DiaryDateTime.Date==item5.DiaryDateTime.Date))
+                                                //        middleDiaries.Add(item4);
+                                                //}
+                                                int i1 = 0;
+                                                foreach (var item6 in middleDiaries)
+                                                {
+                                                    if ((item6.DiaryDateTime.Date == item4.DiaryDateTime.Date))
+                                                        i1++;
+                                                    break;
+                                                }
+                                                if (i1 == 0)
+                                                    middleDiaries.Add(item4);
+
+                                            }
+                                            diaries = middleDiaries;
+                                            Bindings.Update();
+                                            TitleTextBlock.Text = diaries.Count + "篇日记";
+                                            break;
+                                        }
+                                    }
+                                    
+
+                                }
+                                
+                                await Functions.SaveToXmlFile();
+                                var selectedFile1 = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                if (selectedFile1 != null)
+                                {
+                                    using (var localStream = await selectedFile1.OpenReadAsync())
+                                    {
+                                        var fileCreated = await item1.StorageFolderPlatformService.CreateFileAsync(selectedFile1.Name, CreationCollisionOption.ReplaceExisting, localStream);
                                     }
                                 }
+                                break;
+
                             }
                         }
 
@@ -190,6 +300,7 @@ namespace Your_Diary1.MyPages
                             if (!string.IsNullOrEmpty(newFolderName))
                             {
                                 await item.StorageFolderPlatformService.CreateFolderAsync(newFolderName, CreationCollisionOption.OpenIfExists);
+                                
                             }
                             foreach (var item1 in await item.GetFoldersAsync())
                             {
@@ -206,10 +317,11 @@ namespace Your_Diary1.MyPages
 
                     }
                 }
+                //Functions.SaveToXmlFile();
             }
-            catch(Exception w)
+            catch
             {
-                MessageDialog messageDialog = new MessageDialog(w.Message);
+                MessageDialog messageDialog = new MessageDialog("登录取消");
                 await messageDialog.ShowAsync();
             }
             
@@ -229,7 +341,7 @@ namespace Your_Diary1.MyPages
 
         }
 
-        private void DeleteMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        private async  void DeleteMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
             foreach (var item in diaries)
             {
@@ -239,11 +351,80 @@ namespace Your_Diary1.MyPages
                     break;
                 }
             }
+            await Functions.SaveToOneDrive();
+            TitleTextBlock.Text = diaries.Count + "篇日记";
         }
 
         private async void SignOutAppBarButton_Click(object sender, RoutedEventArgs e)
         {
-            await OneDriveService.Instance.LogoutAsync();
+            try
+            {
+                await OneDriveService.Instance.LogoutAsync();
+                MessageDialog messageDialog = new MessageDialog("注销成功");
+                ApplicationData.Current.LocalSettings.CreateContainer("signStateContainer", ApplicationDataCreateDisposition.Always);
+                if (ApplicationData.Current.LocalSettings.Containers.ContainsKey("signStateContainer"))
+                {
+                    ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"] = false;
+                }
+                await messageDialog.ShowAsync();
+            }
+            catch
+            {
+                MessageDialog messageDialog = new MessageDialog("你没有登录");
+                await messageDialog.ShowAsync();
+            }
+            
         }
+
+        private async Task FileToObservable(StorageFile file)
+        {
+            string xmlContent = string.Empty;
+            using (IRandomAccessStream readStream = await file.OpenAsync(FileAccessMode.Read))
+            {
+                using (DataReader dataReader = new DataReader(readStream))
+                {
+                    UInt64 size = readStream.Size;
+                    if (size <= UInt32.MaxValue)
+                    {
+                        UInt32 numBytesLoaded = await dataReader.LoadAsync((UInt32)size);
+                        string fileContent = dataReader.ReadString(numBytesLoaded);
+                        xmlContent = fileContent;
+                    }
+                }
+            }
+            ObservableCollection<Diary> roamingDiaries = (ObservableCollection<Diary>)Functions.Deserialize(typeof(ObservableCollection<Diary>), xmlContent);
+            foreach (var item1 in roamingDiaries)
+            {
+                diaries.Add(item1);
+            }
+            TitleTextBlock.Text = diaries.Count + "篇日记";
+        }
+
+        private async Task<ObservableCollection<Diary>> FileStreamToObservable(IRandomAccessStream fileStream)
+        {
+            string xmlContent = string.Empty;
+            using (IRandomAccessStream readStream = fileStream)
+            {
+                using (DataReader dataReader = new DataReader(readStream))
+                {
+                    UInt64 size = readStream.Size;
+                    if (size <= UInt32.MaxValue)
+                    {
+                        UInt32 numBytesLoaded = await dataReader.LoadAsync((UInt32)size);
+                        string fileContent = dataReader.ReadString(numBytesLoaded);
+                        xmlContent = fileContent;
+                    }
+                }
+            }
+            ObservableCollection<Diary> roamingDiaries = (ObservableCollection<Diary>)Functions.Deserialize(typeof(ObservableCollection<Diary>), xmlContent);
+            return roamingDiaries;
+            //foreach (var item1 in roamingDiaries)
+            //{
+            //    diaries.Add(item1);
+            //}
+            //TitleTextBlock.Text = diaries.Count + "篇日记";
+        }
+
+        
     }
 }
