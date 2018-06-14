@@ -121,6 +121,8 @@
     <None Include="Your Diary1_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\日记.png" />
+    <Content Include="Assets\日记1.png" />
     <Content Include="MyImages\1.png" />
     <Content Include="MyImages\2.jpg" />
     <Content Include="Properties\Default.rd.xml" />
