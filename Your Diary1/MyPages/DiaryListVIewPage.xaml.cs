@@ -75,7 +75,7 @@ namespace Your_Diary1.MyPages
                                                 if (item3.Name == "diary.xml")
                                                 {
                                                     FileInfo fileInfo = new FileInfo(item3.Path);
-                                                    if (item2.FileSize <= fileInfo.Length)
+                                                    if (item2.FileSize <= fileInfo.Length||item2.DateCreated<item3.DateCreated)
                                                     {
                                                         StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
                                                         await FileToObservable(file);
@@ -125,9 +125,18 @@ namespace Your_Diary1.MyPages
                 }
                 catch
                 {
-                    MessageDialog messageDialog = new MessageDialog("网不太好，请重试");
+                    MessageDialog messageDialog = new MessageDialog("网不太好，已加载本地数据");
                     await messageDialog.ShowAsync();
-                    
+                    StorageFolder folder = ApplicationData.Current.LocalFolder;
+                    foreach (var item in await folder.GetFilesAsync())
+                    {
+                        if (item.Name == "diary.xml")
+                        {
+                            StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                            await FileToObservable(file);
+                        }
+                    }
+
                 }
                 
                
@@ -255,49 +264,78 @@ namespace Your_Diary1.MyPages
                                 i++;
                                 foreach (var item2 in await item1.GetFilesAsync())
                                 {
-                                    var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                    
                                     if (item2.Name == "diary.xml")
                                     {
-                                        if (item2.DateModified.Value.Date != DateTime.Now.Date)
+                                        var localFolder = ApplicationData.Current.LocalFolder;
+                                        var selectedFile2 = await localFolder.TryGetItemAsync("diary.xml");
+                                        var selectedFile = (StorageFile)selectedFile2;
+                                        if (selectedFile != null)
                                         {
-                                            var oneDriveFileStream = await item2.StorageFilePlatformService.OpenAsync();
-                                            //diaries = (await FileStreamToObservable(await selectedFile.OpenAsync(FileAccessMode.Read))).Concat((await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream)));
-                                            ObservableCollection<Diary> middleDiaries = await FileStreamToObservable(await selectedFile.OpenAsync(FileAccessMode.Read));
-                                            foreach (var item4 in (await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream)))
+                                            FileInfo fileInfo = new FileInfo(selectedFile.Path);
+                                            //var selectedFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                                            if (item2.FileSize <= fileInfo.Length || item2.DateCreated < selectedFile.DateCreated)
                                             {
-                                                //if (!(middleDiaries.Contains(item4)))
-                                                //{
-                                                //    middleDiaries.Add(item4);
-                                                //}
-                                                //foreach (var item5 in middleDiaries)
-                                                //{
-                                                //    if (!(item4.DiaryDateTime.Date==item5.DiaryDateTime.Date))
-                                                //        middleDiaries.Add(item4);
-                                                //}
-                                                int i1 = 0;
-                                                foreach (var item6 in middleDiaries)
+                                                var oneDriveFileStream = await item2.StorageFilePlatformService.OpenAsync();
+                                                //diaries = (await FileStreamToObservable(await selectedFile.OpenAsync(FileAccessMode.Read))).Concat((await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream)));
+                                                ObservableCollection<Diary> middleDiaries = await FileStreamToObservable(await selectedFile.OpenAsync(FileAccessMode.Read));
+                                                foreach (var item4 in (await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream)))
                                                 {
-                                                    if ((item6.DiaryDateTime.Date == item4.DiaryDateTime.Date))
-                                                        i1++;
-                                                    break;
-                                                }
-                                                if (i1 == 0)
-                                                    middleDiaries.Add(item4);
+                                                    //if (!(middleDiaries.Contains(item4)))
+                                                    //{
+                                                    //    middleDiaries.Add(item4);
+                                                    //}
+                                                    //foreach (var item5 in middleDiaries)
+                                                    //{
+                                                    //    if (!(item4.DiaryDateTime.Date==item5.DiaryDateTime.Date))
+                                                    //        middleDiaries.Add(item4);
+                                                    //}
+                                                    int i1 = 0;
+                                                    foreach (var item6 in middleDiaries)
+                                                    {
+                                                        if ((item6.DiaryDateTime.Date == item4.DiaryDateTime.Date))
+                                                            i1++;
+                                                        break;
+                                                    }
+                                                    if (i1 == 0)
+                                                        middleDiaries.Add(item4);
 
+                                                }
+                                                for (int i2 = 0; i2 < middleDiaries.Count; i2++)
+                                                {
+                                                    for (int i3 = i2+1; i3 < middleDiaries.Count; i3++)
+                                                    {
+                                                        if(middleDiaries[i2].DiaryDateTime == middleDiaries[i3].DiaryDateTime)
+                                                        {
+                                                            middleDiaries.Remove(middleDiaries[i3]);
+                                                        }
+                                                    }
+                                                }
+                                                if (middleDiaries[middleDiaries.Count-1].DiaryDateTime == middleDiaries[middleDiaries.Count - 2].DiaryDateTime)
+                                                {
+                                                    middleDiaries.Remove(middleDiaries[middleDiaries.Count-1]);
+                                                }
+                                                diaries = middleDiaries;
+
+                                                Bindings.Update();
+                                                TitleTextBlock.Text = diaries.Count + "篇日记";
+                                                MessageDialog messageDialog = new MessageDialog("同步完成");
+                                                await messageDialog.ShowAsync();
+                                                break;
                                             }
-                                            diaries = middleDiaries;
-                                            Bindings.Update();
-                                            TitleTextBlock.Text = diaries.Count + "篇日记";
-                                            MessageDialog messageDialog = new MessageDialog("同步完成");
-                                            await messageDialog.ShowAsync();
-                                            break;
+                                            else
+                                            {
+                                                MessageDialog messageDialog = new MessageDialog("不需要同步");
+                                                await messageDialog.ShowAsync();
+                                                break;
+                                            }
                                         }
                                         else
                                         {
-                                            MessageDialog messageDialog = new MessageDialog("不需要同步");
-                                            await messageDialog.ShowAsync();
-                                            break;
+                                            var oneDriveFileStream = await item2.StorageFilePlatformService.OpenAsync();
+                                            diaries = await FileStreamToObservable((IRandomAccessStream)oneDriveFileStream);
                                         }
+                                        
                                     }
                                     
 

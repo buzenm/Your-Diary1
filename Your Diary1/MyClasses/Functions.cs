@@ -71,5 +71,11 @@ namespace Your_Diary1.MyClasses
                 }
             }
         }
+
+        //public static async bool JudgeLocalExit()
+        //{
+        //    var localFolder = ApplicationData.Current.LocalFolder;
+            
+        //}
     }
 }
