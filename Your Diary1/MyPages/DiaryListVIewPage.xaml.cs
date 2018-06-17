@@ -298,7 +298,7 @@ namespace Your_Diary1.MyPages
                                                         break;
                                                     }
                                                     if (i1 == 0)
-                                                        middleDiaries.Add(item4);
+                                                       middleDiaries.Add(item4);
 
                                                 }
                                                 for (int i2 = 0; i2 < middleDiaries.Count; i2++)
