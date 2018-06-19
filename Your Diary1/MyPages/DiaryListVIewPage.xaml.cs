@@ -32,7 +32,7 @@ namespace Your_Diary1.MyPages
     /// </summary>
     public sealed partial class DiaryListVIewPage : Page
     {
-        
+
         public Diary deleteDiary = new Diary();
         public static DiaryListVIewPage current;
         public Diary diary = new Diary();
@@ -43,125 +43,125 @@ namespace Your_Diary1.MyPages
             current = this;
             //diaries.Add(new Diary { DiaryDateTime = DateTime.Parse("2018-6-2"), DiaryWeather = "mucn cloud", DiaryContent = "example" });
             //diaries.Insert(0, new Diary { DiaryDateTime = DateTime.Parse("2018-6-1"), DiaryWeather = "rain", DiaryContent = "shahaha" });
-            
+
             //this.DataContextChanged += (s, e) => Bindings.Update();
         }
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             //await Functions.SaveToOneDrive();
-            string xmlContent = string.Empty;
-            if ((bool)(ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"]))
+            //string xmlContent = string.Empty;
+            //if ((bool)(ApplicationData.Current.LocalSettings.Containers["signStateContainer"].Values["signState"]))
+            //{
+            //    try
+            //    {
+            //        var folder1 = await OneDriveService.Instance.RootFolderForMeAsync();
+            //        var folderList = await folder1.GetFoldersAsync();
+            //        foreach (var item in folderList)
+            //        {
+            //            if (item.Name == "ApplicationData")
+            //            {
+            //                foreach (var item1 in await item.GetFoldersAsync())
+            //                {
+            //                    if (item1.Name == "YourDiary")
+            //                    {
+            //                        foreach (var item2 in await item1.GetFilesAsync())
+            //                        {
+            //                            if (item2.Name == "diary.xml")
+            //                            {
+            //                                StorageFolder folder2 = ApplicationData.Current.LocalFolder;
+            //                                foreach (var item3 in await folder2.GetFilesAsync())
+            //                                {
+            //                                    if (item3.Name == "diary.xml")
+            //                                    {
+            //                                        FileInfo fileInfo = new FileInfo(item3.Path);
+            //                                        if (item2.FileSize <= fileInfo.Length||item2.DateCreated<item3.DateCreated)
+            //                                        {
+            //                                            StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+            //                                            await FileToObservable(file);
+            //                                        }
+            //                                        else
+            //                                        {
+            //                                            var fileStream = await item2.StorageFilePlatformService.OpenAsync();
+            //                                            //using (IRandomAccessStream readStream = (IRandomAccessStream)fileStream)
+            //                                            //{
+            //                                            //    using (DataReader dataReader = new DataReader(readStream))
+            //                                            //    {
+            //                                            //        UInt64 size = readStream.Size;
+            //                                            //        if (size <= UInt32.MaxValue)
+            //                                            //        {
+            //                                            //            UInt32 numBytesLoaded = await dataReader.LoadAsync((UInt32)size);
+            //                                            //            string fileContent = dataReader.ReadString(numBytesLoaded);
+            //                                            //            xmlContent = fileContent;
+            //                                            //        }
+            //                                            //    }
+            //                                            //}
+
+            //                                            //ObservableCollection<Diary> roamingDiaries = (ObservableCollection<Diary>)Functions.Deserialize(typeof(ObservableCollection<Diary>), xmlContent);
+            //                                            ObservableCollection<Diary> roamingDiaries = await FileStreamToObservable((IRandomAccessStream)fileStream);
+            //                                            foreach (var item4 in roamingDiaries)
+            //                                            {
+            //                                                diaries.Add(item4);
+            //                                            }
+            //                                            TitleTextBlock.Text = diaries.Count + "篇日记";
+
+
+            //                                        }
+            //                                        break;
+            //                                        //await Functions.SaveToOneDrive();
+            //                                    }
+
+            //                                }
+
+            //                            }
+
+            //                        }
+            //                    }
+            //                }
+            //                break;
+            //            }
+            //            break;
+            //        }
+            //    }
+            //    catch
+            //    {
+            //        MessageDialog messageDialog = new MessageDialog("网不太好，已加载本地数据");
+            //        await messageDialog.ShowAsync();
+            //        StorageFolder folder = ApplicationData.Current.LocalFolder;
+            //        foreach (var item in await folder.GetFilesAsync())
+            //        {
+            //            if (item.Name == "diary.xml")
+            //            {
+            //                StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+            //                await FileToObservable(file);
+            //            }
+            //        }
+
+            //    }
+
+
+
+            //}
+            //else
+            //{
+            StorageFolder folder = ApplicationData.Current.LocalFolder;
+            foreach (var item in await folder.GetFilesAsync())
             {
-                try
+                if (item.Name == "diary.xml")
                 {
-                    var folder1 = await OneDriveService.Instance.RootFolderForMeAsync();
-                    var folderList = await folder1.GetFoldersAsync();
-                    foreach (var item in folderList)
-                    {
-                        if (item.Name == "ApplicationData")
-                        {
-                            foreach (var item1 in await item.GetFoldersAsync())
-                            {
-                                if (item1.Name == "YourDiary")
-                                {
-                                    foreach (var item2 in await item1.GetFilesAsync())
-                                    {
-                                        if (item2.Name == "diary.xml")
-                                        {
-                                            StorageFolder folder2 = ApplicationData.Current.LocalFolder;
-                                            foreach (var item3 in await folder2.GetFilesAsync())
-                                            {
-                                                if (item3.Name == "diary.xml")
-                                                {
-                                                    FileInfo fileInfo = new FileInfo(item3.Path);
-                                                    if (item2.FileSize <= fileInfo.Length||item2.DateCreated<item3.DateCreated)
-                                                    {
-                                                        StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                                                        await FileToObservable(file);
-                                                    }
-                                                    else
-                                                    {
-                                                        var fileStream = await item2.StorageFilePlatformService.OpenAsync();
-                                                        //using (IRandomAccessStream readStream = (IRandomAccessStream)fileStream)
-                                                        //{
-                                                        //    using (DataReader dataReader = new DataReader(readStream))
-                                                        //    {
-                                                        //        UInt64 size = readStream.Size;
-                                                        //        if (size <= UInt32.MaxValue)
-                                                        //        {
-                                                        //            UInt32 numBytesLoaded = await dataReader.LoadAsync((UInt32)size);
-                                                        //            string fileContent = dataReader.ReadString(numBytesLoaded);
-                                                        //            xmlContent = fileContent;
-                                                        //        }
-                                                        //    }
-                                                        //}
-
-                                                        //ObservableCollection<Diary> roamingDiaries = (ObservableCollection<Diary>)Functions.Deserialize(typeof(ObservableCollection<Diary>), xmlContent);
-                                                        ObservableCollection<Diary> roamingDiaries = await FileStreamToObservable((IRandomAccessStream)fileStream);
-                                                        foreach (var item4 in roamingDiaries)
-                                                        {
-                                                            diaries.Add(item4);
-                                                        }
-                                                        TitleTextBlock.Text = diaries.Count + "篇日记";
-
-
-                                                    }
-                                                    break;
-                                                    //await Functions.SaveToOneDrive();
-                                                }
-
-                                            }
-
-                                        }
-
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                        break;
-                    }
-                }
-                catch
-                {
-                    MessageDialog messageDialog = new MessageDialog("网不太好，已加载本地数据");
-                    await messageDialog.ShowAsync();
-                    StorageFolder folder = ApplicationData.Current.LocalFolder;
-                    foreach (var item in await folder.GetFilesAsync())
-                    {
-                        if (item.Name == "diary.xml")
-                        {
-                            StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                            await FileToObservable(file);
-                        }
-                    }
-
-                }
-                
-               
-
-            }
-            else
-            {
-                StorageFolder folder = ApplicationData.Current.LocalFolder;
-                foreach (var item in await folder.GetFilesAsync())
-                {
-                    if (item.Name == "diary.xml")
-                    {
-                        StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
-                        await FileToObservable(file);
-                    }
+                    StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/diary.xml"));
+                    await FileToObservable(file);
                 }
             }
-            
-            
+            //}
+
+
             //if ((await folder.GetFilesAsync()).Count == 1)
             //{
-                
+
             //}
         }
-
+    
         private void YourDiaryListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             ContentPage.current.RightFrame.Navigate(typeof(DiaryContentPage),e.ClickedItem);
